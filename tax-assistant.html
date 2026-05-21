@@ -397,11 +397,22 @@
             document.getElementById('send-btn').disabled = true;
             try {
                 var endpoint = adminMode ? ADMIN_URL : API_URL;
+                var session = currentUser && currentUser.getSignInUserSession();
+                if (!session || !session.isValid()) {
+                    addMessage('Your session has expired. Please sign in again.', 'assistant');
+                    logout();
+                    return;
+                }
+                var idToken = session.getIdToken().getJwtToken();
                 var response = await fetch(endpoint, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
                     body: JSON.stringify({ question: question, n_results: 5 })
                 });
+                if (response.status === 401 || response.status === 403) {
+                    addMessage('Your account does not have access to this endpoint.', 'assistant');
+                    return;
+                }
                 var data = await response.json();
                 addMessage(data.answer, 'assistant', data.sources);
             } catch (err) {
