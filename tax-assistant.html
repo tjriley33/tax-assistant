@@ -253,6 +253,14 @@
 
             cognitoUserForNewPw.completeNewPasswordChallenge(newPw, {}, {
                 onSuccess: function(result) {
+                    var groups = (result.getIdToken().payload['cognito:groups']) || [];
+                    if (groups.indexOf('forms-only') >= 0) {
+                        cognitoUserForNewPw.signOut();
+                        showError('Your account only has access to Forms Tracker. Redirecting…');
+                        document.getElementById('new-pw-btn').disabled = false;
+                        setTimeout(function(){ location.href = '/tax-forms'; }, 1500);
+                        return;
+                    }
                     currentUser = cognitoUserForNewPw;
                     var email = document.getElementById('login-email').value.trim();
                     sessionStorage.setItem('taxAssistantEmail', email);
