@@ -135,6 +135,10 @@ function logout(){
   location.reload();
 }
 
+// ---- Forms tracker (declared before session resume so cached sessions
+// that fire onAuthenticated synchronously don't call load() while API is undefined) ----
+var API='https://l3dh3tplmc.execute-api.us-east-1.amazonaws.com/forms',allForms=[],filtered=[],page=1,per=50,sField='date_released',sDir=-1;
+
 // Resume existing session if valid
 var existingUser=userPool.getCurrentUser();
 if(existingUser){
@@ -147,9 +151,6 @@ if(existingUser){
 
 document.getElementById('login-password').addEventListener('keypress',function(e){if(e.key==='Enter')login()});
 document.getElementById('login-email').addEventListener('keypress',function(e){if(e.key==='Enter')document.getElementById('login-password').focus()});
-
-// ---- Forms tracker ----
-var API='https://l3dh3tplmc.execute-api.us-east-1.amazonaws.com/forms',allForms=[],filtered=[],page=1,per=50,sField='date_released',sDir=-1;
 async function load(){try{var r=await fetch(API);allForms=await r.json();filtered=allForms;stats();applyFilters()}catch(e){document.getElementById('table-container').textContent='Error loading.'}}
 function stats(){var sp=document.getElementById('filter-supported').value;var base=allForms.filter(function(f){if(sp==='true'&&!f.supported)return false;if(sp==='false'&&f.supported)return false;return true});document.getElementById('total-count').textContent=base.length;document.getElementById('draft-count').textContent=base.filter(f=>f.status==='Draft').length;document.getElementById('final-count').textContent=base.filter(f=>f.status==='Final').length;var d=new Date();d.setDate(d.getDate()-30);var c=d.toISOString().slice(0,10);document.getElementById('recent-count').textContent=base.filter(f=>(f.date_released||'')>c).length}
 function applyFilters(){stats();var s=document.getElementById('search').value.toLowerCase(),o=document.getElementById('filter-owner').value,st=document.getElementById('filter-status').value,yr=document.getElementById('filter-year').value;filtered=allForms.filter(f=>{if(s&&!(f.form_desc||'').toLowerCase().includes(s)&&!(f.owner||'').toLowerCase().includes(s))return false;if(o&&(f.owner||'').indexOf(o)===-1)return false;if(st&&f.status!==st)return false;if(yr&&!(f.form_desc||'').startsWith(yr)&&!(f.date_released||'').startsWith(yr))return false;var tp=document.getElementById('filter-type').value;if(tp==='Form'&&!f.Is_Form)return false;if(tp==='Inst'&&!f.Inst)return false;if(tp==='Pub'&&!f.Pub)return false;var pr=document.getElementById('filter-product').value;if(pr&&!(f['is_'+pr]||''))return false;var sp=document.getElementById('filter-supported').value;if(sp==='true'&&!f.supported)return false;if(sp==='false'&&f.supported)return false;return true});filtered.sort((a,b)=>{var va=a[sField]||'',vb=b[sField]||'';return va>vb?sDir:va<vb?-sDir:0});page=1;render();pager()}
