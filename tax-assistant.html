@@ -215,6 +215,14 @@
 
             cognitoUser.authenticateUser(authDetails, {
                 onSuccess: function(result) {
+                    var groups = (result.getIdToken().payload['cognito:groups']) || [];
+                    if (groups.indexOf('forms-only') >= 0) {
+                        cognitoUser.signOut();
+                        showError('Your account only has access to Forms Tracker. Redirecting…');
+                        document.getElementById('login-btn').disabled = false;
+                        setTimeout(function(){ location.href = '/tax-forms'; }, 1500);
+                        return;
+                    }
                     currentUser = cognitoUser;
                     sessionStorage.setItem('taxAssistantEmail', email);
                     document.getElementById('login-overlay').style.display = 'none';
@@ -276,6 +284,12 @@
         if (existingUser) {
             existingUser.getSession(function(err, session) {
                 if (!err && session && session.isValid()) {
+                    var groups = (session.getIdToken().payload['cognito:groups']) || [];
+                    if (groups.indexOf('forms-only') >= 0) {
+                        existingUser.signOut();
+                        location.href = '/tax-forms';
+                        return;
+                    }
                     currentUser = existingUser;
                     document.getElementById('login-overlay').style.display = 'none';
                     document.getElementById('user-email').textContent = sessionStorage.getItem('taxAssistantEmail') || '';
