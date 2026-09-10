@@ -1,13 +1,10 @@
-# Federal Tax Assistant
+# builtbyriley.com
 
 Lives at [builtbyriley.com](https://builtbyriley.com).
 
-Static front-end (Cloudflare Workers Assets) for:
+Currently a single "Coming soon" page (`public/index.html`). Every path, including the old `/tax-assistant` and `/tax-forms` URLs, serves it.
 
-- **Tax Q&A** (`/tax-assistant`) — Cognito-authenticated chat over IRS docs
-- **Forms Tracker** (`/tax-forms`) — searchable/filterable IRS forms catalog
-
-The Q&A backend is a separate API (AWS API Gateway + Cognito); this repo is the UI only.
+The Tax Q&A and Forms Tracker front-end was taken down on 2026-09-10; it is in git history before that date. The AWS backend (API Gateway, Cognito, Lambdas, the `forms123456` bucket) was left running because the IRS-Forms pipeline still uses it.
 
 ## Deploy
 
